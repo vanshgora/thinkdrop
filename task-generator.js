@@ -11,7 +11,7 @@ So, Give me a random topic from any domain. Include:
 
     Format your response as json:
     { subject: "<subject of the email>", content: "<full content of the email in html>" }
-     note: json must be correct`
+     note: json must be correct, task should be as completed in a day but taht should be like that triggers my fear so i can leaarn concept with my best`
 
 const AIModel = "gemini-2.5-flash";
 
@@ -27,7 +27,7 @@ async function generateNewTask() {
             contents: prompt,
         });
 
-        taskStr = response.text.replace(/^```json\s*/, '').replace(/\s*```$/, '').replace(/\\n/g, '\\\\n').replace(/\+\s*/g, "").replace(/"content":\s*"/, '"content": "');
+        taskStr = response.text.replace(/^```json\s*/, '').replace(/\s*```$/, '').replace(/\+\s*/g, "").replace(/"content":\s*"/, '"content": "');
     } while(!isValidJSON(taskStr));
     
     return JSON.parse(taskStr);
