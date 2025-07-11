@@ -1,6 +1,6 @@
 const { GoogleGenAI } = require('@google/genai');
 
-const prompt = `I want to increse a new thing daily no matter which domain and learn about it by doing a challengin task for improving myself.
+const prompt = `I want to increase my multi-dimensional knowledge like health, fashion, tech, engineering , drama, dj, writting, crowd word, public speaking, general intresing topics and any other dimension exsists no matter what.
 So, Give me a random topic from any domain. Include:
 
     A clear explanation of the topic,
