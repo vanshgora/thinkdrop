@@ -7,7 +7,7 @@ dotenv.config();
 
 console.log(new Date().toLocaleString())
 
-const task = cron.schedule("0 47 11 * * *", async () => {
+const task = cron.schedule("0 30 7 * * *", async () => {
 	try {
 		const response = await generateNewTask();
 		sendMail("vanshgora30@gmail.com", response.subject, response.content);
