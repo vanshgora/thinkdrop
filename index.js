@@ -7,14 +7,17 @@ dotenv.config();
 
 console.log(new Date().toLocaleString())
 
-const task = cron.schedule("0 7 11 * * *", async () => {
+const task = cron.schedule("0 10 11 * * *", async () => {
 	try {
 		const response = await generateNewTask();
 		sendMail("vanshgora30@gmail.com", response.subject, response.content);
 	} catch (err) {
 		console.log("Error :", err.message);
 	}
-}
+},
+	{
+		timezone: "Asia/Kolkata"
+	}
 );
 
 process.stdin.resume();
