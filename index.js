@@ -5,6 +5,8 @@ const { sendMail } = require("./send-mail");
 
 dotenv.config();
 
+console.log(new Date().toLocaleString())
+
 const task = cron.schedule("0 2 11 * * *", async () => {
 	try {
 		const response = await generateNewTask();
