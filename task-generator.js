@@ -11,7 +11,7 @@ So, Give me a random topic from any domain. Include:
 
     Format your response as json:
     { subject: "<subject of the email>", content: "<full content of the email in html>" }
-     note: json must be correct, task should be as completed in a day but taht should be like that triggers my fear so i can leaarn concept with my best`
+     note: json must be correct, task should be as completed in a day`
 
 const AIModel = "gemini-2.5-flash";
 
