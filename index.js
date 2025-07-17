@@ -3,17 +3,30 @@ const dotenv = require("dotenv");
 const { generateNewTask } = require("./task-generator");
 const { sendMail } = require("./send-mail");
 const connectToDB = require('./dbconfig');
+const createRedisClient = require("./redisconfig");
+const { taskGenerationScheduleStr, mailScheduleSchedueStr } = require("./config");
 
 dotenv.config();
 
 const supabase = connectToDB();
+const redisClient = createRedisClient();
 
-const task = cron.schedule("0 30 7 * * *", async () => {
+let dailyTask;
+
+const taskGeneratorSchedule = cron.schedule(taskGenerationScheduleStr, async () => {
+	dailyTask = await generateNewTask();
+});
+
+const mailSchedule = cron.schedule(mailScheduleSchedueStr, async () => {
 	try {
-		const response = await generateNewTask();
-		const emailList = await getEmailList();
+		if(!dailyTask) {
+			throw("Task not generated yet");
+		}
+		const currentHour = new Date().getHours();
+		const currentMinutes = new Date().getMinutes();
+		const emailList = await getEmailList(currentHour, currentMinutes);
 		emailList.forEach((email) => {
-			sendMail(email, response.subject, response.content);
+			sendMail(email, dailyTask.subject, dailyTask.content);
 		});
 
 	} catch (err) {
@@ -25,16 +38,25 @@ const task = cron.schedule("0 30 7 * * *", async () => {
 	}
 );
 
-async function getEmailList() {
-	const { data, error } = await supabase.from('registered_mails').select('*');
+async function getEmailList(currentHour, currentMinutes) {
+	const hourStr = String(currentHour).padStart(2, '0');
+	const minuteStr = String(currentMinutes).padStart(2, '0');
+	const timeToMatch = `${hourStr}:${minuteStr}`;
+	console.log(timeToMatch);
+
+	const { data, error } = await supabase
+		.from('registered_mails')
+		.select('email_id')
+		.eq('preferredTime', timeToMatch);
+
 	if (error) {
-		throw ('DB Error: ' + ' ' + error);
+		throw new Error('DB Error: ' + error.message);
 	}
 
-	const emailList = data.map(obj => obj.email_id);
-	return emailList;
+	return data.map(obj => obj.email_id);
 }
 
-task.start();
+taskGeneratorSchedule.start();
+mailSchedule.start();
 
 process.stdin.resume();
