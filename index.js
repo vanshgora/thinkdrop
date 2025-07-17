@@ -19,6 +19,8 @@ const taskGeneratorSchedule = cron.schedule(taskGenerationScheduleStr, async () 
 	dailyTask = await generateNewTask();
 });
 
+console.log(mailScheduleSchedueStr);
+
 const mailSchedule = cron.schedule(mailScheduleSchedueStr, async () => {
 	try {
 		if(!dailyTask) {
