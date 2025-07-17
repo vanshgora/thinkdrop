@@ -3,15 +3,17 @@ const dotenv = require("dotenv");
 const { generateNewTask } = require("./task-generator");
 const { sendMail } = require("./send-mail");
 const connectToDB = require('./dbconfig');
-const createRedisClient = require("./redisconfig");
 const { taskGenerationScheduleStr, mailScheduleSchedueStr } = require("./config");
 
 dotenv.config();
 
 const supabase = connectToDB();
-const redisClient = createRedisClient();
 
 let dailyTask;
+
+(async () => {
+	dailyTask = await generateNewTask();
+})();
 
 const taskGeneratorSchedule = cron.schedule(taskGenerationScheduleStr, async () => {
 	dailyTask = await generateNewTask();
