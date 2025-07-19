@@ -17,17 +17,19 @@ let dailyTask;
 
 const taskGeneratorSchedule = cron.schedule(taskGenerationScheduleStr, async () => {
 	dailyTask = await generateNewTask();
+}, {
+	timezone: "Asia/Kolkata"
 });
-
-console.log(mailScheduleSchedueStr);
 
 const mailSchedule = cron.schedule(mailScheduleSchedueStr, async () => {
 	try {
-		if(!dailyTask) {
-			throw("Task not generated yet");
+		if (!dailyTask) {
+			throw ("Task not generated yet");
 		}
-		const currentHour = new Date().getHours();
-		const currentMinutes = new Date().getMinutes();
+		const nowUTC = new Date();
+		const istTime = new Date(nowUTC.getTime() + (5.5 * 60 * 60 * 1000));
+		const currentHour = istTime.getHours();
+		const currentMinutes = istTime.getMinutes();
 		const emailList = await getEmailList(currentHour, currentMinutes);
 		emailList.forEach((email) => {
 			sendMail(email, dailyTask.subject, dailyTask.content);
@@ -46,7 +48,6 @@ async function getEmailList(currentHour, currentMinutes) {
 	const hourStr = String(currentHour).padStart(2, '0');
 	const minuteStr = String(currentMinutes).padStart(2, '0');
 	const timeToMatch = `${hourStr}:${minuteStr}`;
-	console.log(timeToMatch);
 
 	const { data, error } = await supabase
 		.from('registered_mails')

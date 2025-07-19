@@ -11,26 +11,26 @@ So, Give me a random topic from any domain. Include:
 
     Format your response as json:
     { subject: "<subject of the email>", content: "<full content of the email in html>" }
-     note: json must be correct, task should be as completed in a day`
+     note: json must be correct, task can being completed in a day`
 
 const AIModel = "gemini-2.5-flash";
 
 async function generateNewTask() {
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-    let taskStr = "";
+  let taskStr = "";
 
-    do {
-        console.log("request made");
-        const response = await ai.models.generateContent({
-            model: AIModel,
-            contents: prompt,
-        });
+  do {
+    console.log("request made");
+    const response = await ai.models.generateContent({
+      model: AIModel,
+      contents: prompt,
+    });
 
-        taskStr = response.text.replace(/^```json\s*/, '').replace(/\s*```$/, '').replace(/\+\s*/g, "").replace(/"content":\s*"/, '"content": "');
-    } while(!isValidJSON(taskStr));
-    
-    return JSON.parse(taskStr);
+    taskStr = response.text.replace(/^```json\s*/, '').replace(/\s*```$/, '').replace(/\+\s*/g, "").replace(/"content":\s*"/, '"content": "');
+  } while (!isValidJSON(taskStr));
+
+  return JSON.parse(taskStr);
 }
 
 function isValidJSON(str) {
