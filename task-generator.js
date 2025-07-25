@@ -36,12 +36,10 @@ async function generateNewTask() {
   } while (!isValidJSON(taskStr));
 
   const taskJson = JSON.parse(taskStr);
-	if(pastTopics.lenght === 30) {
-		pastTopics.unshift();
-	}
-	pastTopics.push(taskJson.topic);
-	console.log(pastTopics);
-	console.log(taskJson);
+  if(pastTopics.lenght === 30) {
+	pastTopics.unshift();
+  }
+  pastTopics.push(taskJson.topic);
   return taskJson;
 }
 
