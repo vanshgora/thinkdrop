@@ -9,7 +9,7 @@ dotenv.config();
 
 let database;
 
-connectToDB.then((val) => {
+connectToDB().then((val) => {
 	database = val;
 })
 
@@ -62,6 +62,7 @@ async function getEmailList(currentHour, currentMinutes) {
 		const emailArr = [];
 
 		for await (const obj of data) {
+			if(!obj.isServicePaused);
 			emailArr.push(obj.email);
 		}
 
