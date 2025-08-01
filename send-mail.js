@@ -6,6 +6,8 @@ async function sendMail(to, subject, content ) {
     return;
   }
 
+  console.log(to);
+
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {

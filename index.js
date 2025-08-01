@@ -3,22 +3,27 @@ const dotenv = require("dotenv");
 const { generateNewTask } = require("./task-generator");
 const { sendMail } = require("./send-mail");
 const connectToDB = require('./dbconfig');
-const { taskGenerationScheduleStr, mailScheduleSchedueStr } = require("./config");
+const { taskGenerationScheduleStr, mailScheduleSchedueStr, IndianTimezone } = require("./config");
 
 dotenv.config();
 
-const supabase = connectToDB();
+let database;
+
+connectToDB.then((val) => {
+	database = val;
+})
 
 let dailyTask;
 
 (async () => {
 	dailyTask = await generateNewTask();
+	sendMail('vanshgora31@gmail.com', dailyTask.subject, dailyTask.content);
 })();
 
 const taskGeneratorSchedule = cron.schedule(taskGenerationScheduleStr, async () => {
 	dailyTask = await generateNewTask();
 }, {
-	timezone: "Asia/Kolkata"
+	timezone: IndianTimezone
 });
 
 const mailSchedule = cron.schedule(mailScheduleSchedueStr, async () => {
@@ -40,25 +45,30 @@ const mailSchedule = cron.schedule(mailScheduleSchedueStr, async () => {
 	}
 },
 	{
-		timezone: "Asia/Kolkata"
+		timezone: IndianTimezone
 	}
 );
 
 async function getEmailList(currentHour, currentMinutes) {
-	const hourStr = String(currentHour).padStart(2, '0');
-	const minuteStr = String(currentMinutes).padStart(2, '0');
-	const timeToMatch = `${hourStr}:${minuteStr}`;
+	try {
+		const hourStr = String(currentHour).padStart(2, '0');
+		const minuteStr = String(currentMinutes).padStart(2, '0');
+		const timeToMatch = `${hourStr}:${minuteStr}`;
 
-	const { data, error } = await supabase
-		.from('registered_mails')
-		.select('email_id')
-		.eq('preferredTime', timeToMatch);
+		const users = database.collection('users');
 
-	if (error) {
-		throw new Error('DB Error: ' + error.message);
+		const data = users.find({ 'preferredTime': timeToMatch });
+
+		const emailArr = [];
+
+		for await (const obj of data) {
+			emailArr.push(obj.email);
+		}
+
+		return emailArr;
+	} catch (err) {
+		console.log("Error while fetching data from db", err);
 	}
-
-	return data.map(obj => obj.email_id);
 }
 
 taskGeneratorSchedule.start();

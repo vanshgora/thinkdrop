@@ -16,7 +16,7 @@ So, Give me a random topic from any domain. Include:
      note:
       1. JSON must be correct.
       2. task can being completed in a day.
-      3. Do not content related to these topics : ${pastTopics.join(", ")}.`
+      3. Do not generate any content related to these topics : ${pastTopics.join(", ")}.`
 
 const AIModel = "gemini-2.5-flash";
 
