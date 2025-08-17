@@ -1,0 +1,13 @@
+{
+    "topic": {
+        "name": "<topic name>",
+        "detail": "<detail explanation of the topic>",
+        "task": "<Array of diffrent steps of tasks>",
+        "resources": "<Array of diffrent resources of tasks>",
+        "tags": "<Array of tags reated to the topic>"
+    },
+    "email": {
+        "subject": "<subject of the mail>",
+        "content": "<structurized topic obj content in the form of html>"
+    }
+}

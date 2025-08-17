@@ -2,77 +2,59 @@ const cron = require("node-cron");
 const dotenv = require("dotenv");
 const { generateNewTask } = require("./task-generator");
 const { sendMail } = require("./send-mail");
-const connectToDB = require('./dbconfig');
+const { connectToDB, getDb } = require('./dbconfig');
 const { taskGenerationScheduleStr, mailScheduleSchedueStr, IndianTimezone } = require("./config");
+const { getEmailList } = require("./script");
 
 dotenv.config();
 
-let database;
+const startService = async () => {
 
-connectToDB().then((val) => {
-	database = val;
-})
+	await connectToDB();
 
-let dailyTask;
+	let dailyTask;
 
-(async () => {
-	dailyTask = await generateNewTask();
-	sendMail('vanshgora31@gmail.com', dailyTask.subject, dailyTask.content);
-})();
+	(async () => {
+		dailyTask = (await generateNewTask());
+		const database = getDb();
+		const taskCollection = database.collection('tasks');
+		await taskCollection.insertOne({ ...dailyTask, createdAt: new Date() });
+		sendMail('vanshgora31@gmail.com', dailyTask.email.subject, dailyTask.email.content);
+	})();
 
-const taskGeneratorSchedule = cron.schedule(taskGenerationScheduleStr, async () => {
-	dailyTask = await generateNewTask();
-}, {
-	timezone: IndianTimezone
-});
-
-const mailSchedule = cron.schedule(mailScheduleSchedueStr, async () => {
-	try {
-		if (!dailyTask) {
-			throw ("Task not generated yet");
-		}
-		const nowUTC = new Date();
-		const istTime = new Date(nowUTC.getTime() + (5.5 * 60 * 60 * 1000));
-		const currentHour = istTime.getHours();
-		const currentMinutes = istTime.getMinutes();
-		const emailList = await getEmailList(currentHour, currentMinutes);
-		emailList.forEach((email) => {
-			sendMail(email, dailyTask.subject, dailyTask.content);
-		});
-
-	} catch (err) {
-		console.log("Error :", err.message);
-	}
-},
-	{
+	const taskGeneratorSchedule = cron.schedule(taskGenerationScheduleStr, async () => {
+		dailyTask = await generateNewTask();
+	}, {
 		timezone: IndianTimezone
-	}
-);
+	});
 
-async function getEmailList(currentHour, currentMinutes) {
-	try {
-		const hourStr = String(currentHour).padStart(2, '0');
-		const minuteStr = String(currentMinutes).padStart(2, '0');
-		const timeToMatch = `${hourStr}:${minuteStr}`;
+	const mailSchedule = cron.schedule(mailScheduleSchedueStr, async () => {
+		try {
+			if (!dailyTask) {
+				throw ("Task not generated yet");
+			}
+			const nowUTC = new Date();
+			const istTime = new Date(nowUTC.getTime() + (5.5 * 60 * 60 * 1000));
+			const currentHour = istTime.getHours();
+			const currentMinutes = istTime.getMinutes();
+			const emailList = await getEmailList(currentHour, currentMinutes);
+			emailList.forEach((email) => {
+				sendMail(email, dailyTask.subject, dailyTask.content);
+			});
 
-		const users = database.collection('users');
-
-		const data = users.find({ 'preferredTime': timeToMatch });
-
-		const emailArr = [];
-
-		for await (const obj of data) {
-			if(!obj.isServicePaused);
-			emailArr.push(obj.email);
+		} catch (err) {
+			console.log("Error :", err.message);
 		}
+	},
+		{
+			timezone: IndianTimezone
+		}
+	);
 
-		return emailArr;
-	} catch (err) {
-		console.log("Error while fetching data from db", err);
-	}
+	taskGeneratorSchedule.start();
+	mailSchedule.start();
+
+	process.stdin.resume();
 }
 
-taskGeneratorSchedule.start();
-mailSchedule.start();
-
-process.stdin.resume();
+startService();
