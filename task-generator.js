@@ -4,7 +4,7 @@ const { getResponseStrucrure } = require('./script');
 const pastTopics = [];
 
 async function getPrompt() {
-  const prompt = `I want to increase my multi-dimensional knowledge like health, fashion, tech, engineering , drama, dj, writting, crowd word, public speaking, general intresing topics and any other dimension exsists no matter what.
+  const prompt = `I want to increase my multi-dimensional knowledge like math, health, fashion, tech, engineering , drama, dj, writting, general intresing topics and any other dimension exsists no matter what.
 So, Give me a random topic from any domain. Include:
 
     A clear explanation of the topic,
@@ -18,7 +18,8 @@ So, Give me a random topic from any domain. Include:
          note:
       1. JSON must be correct.
       2. task can being completed in a day.
-      3. Do not generate any content related to these topics : ${pastTopics.join(", ")}.`
+      3. Do not generate any content related to these topics : ${pastTopics.join(", ")}.
+      4. The topic should be something I might not have encountered before, feeling fresh and new. It must not be a common concept like cognitive biases or Pareto's principle.`
       
   return prompt;
 }

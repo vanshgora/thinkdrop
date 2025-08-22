@@ -16,7 +16,7 @@ async function getEmailList(currentHour, currentMinutes) {
         const emailArr = [];
 
         for await (const obj of data) {
-            if (!obj.isServicePaused);
+            if (!obj.isPaused);
             emailArr.push(obj.email);
         }
 
