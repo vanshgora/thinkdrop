@@ -18,7 +18,38 @@ const startService = async () => {
 		dailyTask = (await generateNewTask());
 		const database = getDb();
 		const taskCollection = database.collection('tasks');
-		await taskCollection.insertOne({ ...dailyTask, createdAt: new Date() });
+		const task = await taskCollection.insertOne({ ...dailyTask, createdAt: new Date() });
+		const taskId = task.insertedId;
+		const usersCollection = database.collection('users');
+		const users = await usersCollection.find();
+		const taskTrackArr = dailyTask.topic.task.map(t => false);
+		const today = new Date();
+		const date = today.getDate();
+		const month = today.getMonth();
+		const year = today.getFullYear();
+
+		const dateStr = `${date}/${month}/${year}`;
+
+		const userTasks = database.collection('usertasks');
+		for await (const obj of users) {
+			const userId = obj._id;
+			const data = await userTasks.findOne({ userId: userId });
+			if (!data) {
+				const tasks = {};
+				const tasktrackObj = {};
+				tasktrackObj.taskId = taskId;
+				tasktrackObj.taskTrack = taskTrackArr;
+				tasks[dateStr] = tasktrackObj;
+				await userTasks.insertOne({ userId: userId, tasks: tasks, createdAt: new Date(), updatedAt: new Date() });
+			} else {
+				const tasks = data.tasks;
+				const tasktrackObj = {};
+				tasktrackObj.taskId = taskId;
+				tasktrackObj.taskTrack = taskTrackArr;
+				tasks[dateStr] = tasktrackObj;
+				await userTasks.findOneAndUpdate({ userId: userId }, { $set: { userId: userId, tasks: tasks, updatedAt: new Date() } }, { new: true });
+			}
+		}
 		sendMail('vanshgora31@gmail.com', dailyTask.email.subject, dailyTask.email.content);
 	})();
 
@@ -29,13 +60,34 @@ const startService = async () => {
 		const task = await taskCollection.insertOne({ ...dailyTask, createdAt: new Date() });
 		const taskId = task.insertedId;
 		const usersCollection = database.collection('users');
-		const users = usersCollection.find();
+		const users = await usersCollection.find();
 		const taskTrackArr = dailyTask.topic.task.map(t => false);
+		const today = new Date();
+		const date = today.getDate();
+		const month = today.getMonth();
+		const year = today.getFullYear();
+
+		const dateStr = `${date}/${month}/${year}`;
 
 		const userTasks = database.collection('usertasks');
 		for await (const obj of users) {
 			const userId = obj._id;
-			await userTasks.insertOne({ taskId: taskId, userId: userId, taskTrack: taskTrackArr, createdAt: new Date(), updatedAt: new Date() });
+			const data = await userTasks.findOne({ userId: userId });
+			if (!data) {
+				const tasks = {};
+				const tasktrackObj = {};
+				tasktrackObj.taskId = taskId;
+				tasktrackObj.taskTrack = taskTrackArr;
+				tasks[dateStr] = tasktrackObj;
+				await userTasks.insertOne({ userId: userId, tasks: tasks, createdAt: new Date(), updatedAt: new Date() });
+			} else {
+				const tasks = data.tasks;
+				const tasktrackObj = {};
+				tasktrackObj.taskId = taskId;
+				tasktrackObj.taskTrack = taskTrackArr;
+				tasks[dateStr] = tasktrackObj;
+				await userTasks.findOneAndUpdate({ userId: userId }, { $set: { userId: userId, tasks: tasks, updatedAt: new Date() } }, { new: true });
+			}
 		}
 	}, {
 		timezone: IndianTimezone
